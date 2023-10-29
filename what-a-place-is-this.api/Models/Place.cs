@@ -12,6 +12,6 @@ public class Place
     public string Coordinates { get; set; }
     public string Address { get; set; }
     public List<Picture> Pictures { get; set; } = new List<Picture>();
-    public List<Comments> MyProperty { get; set; } = new List<Comments>();
+    public List<Comments> Comment { get; set; } = new List<Comments>();
     public int Evaluation { get; set; } = 0;
 }
