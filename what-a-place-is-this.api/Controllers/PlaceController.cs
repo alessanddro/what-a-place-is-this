@@ -32,12 +32,12 @@ public class PlaceController : ControllerBase
                     {
                         item.Pictures[i].Path = _HOST + item.Pictures[i].Path.Replace("wwwroot/", "");
                     }
-                    else
+                    else if (item.Pictures[i].Active == false)
                     {
                         item.Pictures.RemoveAt(i);
                     }
                 }
-                else
+                else if (item.Pictures[i].Validated == false)
                 {
                     item.Pictures.RemoveAt(i);
                 }
@@ -93,6 +93,7 @@ public class PlaceController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = newPlace.Id }, newPlace);
     }
 
+
     [HttpPatch("{id:length(24)}")]
     public async Task<IActionResult> Update(string id, [FromBody] Place updatedBook)
     {
@@ -106,6 +107,50 @@ public class PlaceController : ControllerBase
         updatedBook.Id = place.Id;
 
         await _service.UpdateAsync(id, updatedBook);
+
+        return NoContent();
+    }
+
+    [HttpPatch("comment/{placeId:length(24)}")]
+    public async Task<IActionResult> AddComment(string placeId, [FromBody] Comments comment)
+    {
+        var place = await _service.GetAsync(placeId);
+
+        if (place is null)
+        {
+            return NotFound();
+        }
+
+        await _service.AddComment(place, comment);
+
+        return NoContent();
+    }
+
+    [HttpPatch("pictures/{placeId:length(24)}")]
+    public async Task<IActionResult> AddPicture(string placeId, IFormFile[] _picture)
+    {
+        var place = await _service.GetAsync(placeId);
+
+        if (place is null)
+        {
+            return NotFound();
+        }
+
+        Picture picture = new();
+        List<Picture> pictures = new();
+        for (int i = 0; i < _picture.Length; i++)
+        {
+            var ext = Path.GetExtension(_picture[i].FileName);
+            string uuid = Guid.NewGuid().ToString();
+            string filePath = Path.Combine("wwwroot/Storage/PlacePictures/", uuid + ext);
+
+            using Stream fileStream = new FileStream(filePath, FileMode.Create);
+            _picture[i].CopyTo(fileStream);
+            picture.Path = filePath;
+            pictures.Add(picture);
+        }
+
+        await _service.AddPicture(place, pictures);
 
         return NoContent();
     }
