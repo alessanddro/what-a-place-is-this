@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /what-a-place-is-this.api/wwwroot/Storage/PlacePictures/*
 !/what-a-place-is-this.api/wwwroot/Storage/PlacePictures/.gitkeep
+/what-a-place-is-this.api/appsettings.json

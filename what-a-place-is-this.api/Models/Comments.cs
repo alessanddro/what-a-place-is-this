@@ -7,7 +7,7 @@ namespace what_a_place_is_this.api.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
+        public string? Id { get; set; } = ObjectId.GenerateNewId().ToString();
         public string Comment { get; set; }
         public string UserId { get; set; }
     }

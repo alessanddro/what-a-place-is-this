@@ -11,6 +11,7 @@ public class PlaceService
 {
     private readonly Conn _conn;
     private readonly IMongoCollection<Place> _placeCollection;
+
     public PlaceService(IOptions<DatabaseSettings> bookStoreDatabaseSettings)
     {
         _conn = new Conn(bookStoreDatabaseSettings);
@@ -19,11 +20,16 @@ public class PlaceService
         _placeCollection = _dataBase.GetCollection<Place>("Places");
     }
 
-    public async Task<List<Place>> GetAsync() =>
-        await _placeCollection.Find(_ => true).ToListAsync();
+    public async Task<List<Place>> GetAsync()
+    {
+        return await _placeCollection.Find(_ => true).ToListAsync();
+    }
 
-    public async Task<Place?> GetAsync(string id) =>
-        await _placeCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+    public async Task<Place?> GetAsync(string id)
+    {
+        return await _placeCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+    }
+
     public Object GenerateQRCode(string id)
     {
         string qrcode = "https://chart.googleapis.com/chart?chs=512x512&cht=qr&chl=" + id;
@@ -34,12 +40,34 @@ public class PlaceService
         return response;
     }
 
-    public async Task CreateAsync(Place newPlace) =>
+    public async Task CreateAsync(Place newPlace)
+    {
         await _placeCollection.InsertOneAsync(newPlace);
+    }
 
-    public async Task UpdateAsync(string id, [FromBody] Place updatedPlace) =>
-    await _placeCollection.ReplaceOneAsync(x => x.Id == id, updatedPlace);
+    public async Task UpdateAsync(string id, [FromBody] Place updatedPlace)
+    {
+        await _placeCollection.ReplaceOneAsync(x => x.Id == id, updatedPlace);
+    }
 
-    public async Task RemoveAsync(string id) =>
+    public async Task AddComment(Place place, [FromBody] Comments comment)
+    {
+        place.Comment.Add(comment);
+        await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
+    }
+
+    public async Task AddPicture(Place place, [FromBody] List<Picture> pictures)
+    {
+        foreach (var pic in pictures)
+        {
+            place.Pictures.Add(pic);
+        }
+
+        await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
+    }
+
+    public async Task RemoveAsync(string id)
+    {
         await _placeCollection.DeleteOneAsync(x => x.Id == id);
+    }
 }
