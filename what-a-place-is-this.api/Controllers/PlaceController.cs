@@ -126,7 +126,7 @@ public class PlaceController : ControllerBase
         return NoContent();
     }
 
-    [HttpPatch("pictures/{placeId:length(24)}")]
+    [HttpPatch("picture/{placeId:length(24)}")]
     public async Task<IActionResult> AddPicture(string placeId, IFormFile[] _picture)
     {
         var place = await _service.GetAsync(placeId);
@@ -172,6 +172,34 @@ public class PlaceController : ControllerBase
         }
 
         await _service.RemoveAsync(id);
+
+        return NoContent();
+    }
+
+    [HttpDelete("comment/{id:length(24)}/{commentId:length(24)}")]
+    public async Task<IActionResult> DeleteComment(string id, string commentId)
+    {
+        Place place = await _service.GetAsync(id);
+
+        if (place is null)
+        {
+            return NotFound();
+        }
+        await _service.RemoveCommentAsync(commentId, place);
+
+        return NoContent();
+    }
+
+    [HttpDelete("picture/{placeId:length(24)}/{pictureId:length(24)}")]
+    public async Task<IActionResult> DeletePicture(string placeId, string pictureId)
+    {
+        Place place = await _service.GetAsync(placeId);
+
+        if (place is null)
+        {
+            return NotFound();
+        }
+        await _service.RemovePictureAsync(pictureId, place);
 
         return NoContent();
     }

@@ -70,4 +70,28 @@ public class PlaceService
     {
         await _placeCollection.DeleteOneAsync(x => x.Id == id);
     }
+
+    public async Task RemoveCommentAsync(string commentId, Place place)
+    {
+        for (int i = 0; i < place.Comment.Count; i++)
+        {
+            if (place.Comment[i].Id == commentId)
+            {
+                place.Comment.RemoveAt(i);
+            }
+        }
+        await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
+    }
+
+    public async Task RemovePictureAsync(string pictureId, Place place)
+    {
+        for (int i = 0; i < place.Pictures.Count; i++)
+        {
+            if (place.Pictures[i].Id == pictureId)
+            {
+                place.Pictures.RemoveAt(i);
+            }
+        }
+        await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
+    }
 }

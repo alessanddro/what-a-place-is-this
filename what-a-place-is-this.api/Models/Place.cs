@@ -13,5 +13,5 @@ public class Place
     public string Address { get; set; }
     public List<Picture> Pictures { get; set; } = new List<Picture>();
     public List<Comments> Comment { get; set; } = new List<Comments>();
-    public int Evaluation { get; set; } = 0;
+    public List<string> Evaluation { get; set; } = new();
 }
