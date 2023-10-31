@@ -72,8 +72,24 @@ public class PlaceController : ControllerBase
                 place.Pictures.RemoveAt(i);
             }
         }
+
         return place;
     }
+
+    [HttpGet("evaluation/{placeId:length(24)}/{userId:length(24)}")]
+    public async Task<IActionResult> SetEvaluation(string placeId, string userId)
+    {
+        //User user = new()
+        Place place = await _service.GetAsync(placeId);
+        if (place is null)
+        {
+            return NotFound();
+        }
+
+        await _service.UpdateEvaluation(place, userId);
+        return Ok();
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post([FromForm] Place newPlace, IFormFile[] picture)
     {

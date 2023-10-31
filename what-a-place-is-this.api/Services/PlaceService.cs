@@ -94,4 +94,26 @@ public class PlaceService
         }
         await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
     }
+
+    public async Task UpdateEvaluation(Place place, string userId)
+    {
+        var evaluation = place.Evaluation;
+        Predicate<string> find = item => item == userId;
+
+        if (evaluation[0].Contains(userId))
+        {
+            evaluation[0].Remove(userId);
+            evaluation[1] = evaluation[1] - 1;
+            Console.WriteLine("Usuario, " + userId + " removido");
+            Console.WriteLine("Total, " + evaluation[1]);
+        }
+        else
+        {
+            evaluation[0].Add(userId);
+            evaluation[1] = evaluation[0].Count;
+            Console.WriteLine("Usuario, " + userId + " adicionado");
+        }
+        place.Evaluation = evaluation;
+        await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
+    }
 }
