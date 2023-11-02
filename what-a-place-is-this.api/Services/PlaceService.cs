@@ -10,22 +10,22 @@ namespace what_a_place_is_this.api.Services;
 public class PlaceService
 {
     private readonly Conn _conn;
-    private readonly IMongoCollection<Place> _placeCollection;
+    private readonly IMongoCollection<PlaceModel> _placeCollection;
 
     public PlaceService(IOptions<DatabaseSettings> bookStoreDatabaseSettings)
     {
         _conn = new Conn(bookStoreDatabaseSettings);
         var _dataBase = _conn.getDataBase();
 
-        _placeCollection = _dataBase.GetCollection<Place>("Places");
+        _placeCollection = _dataBase.GetCollection<PlaceModel>("Places");
     }
 
-    public async Task<List<Place>> GetAsync()
+    public async Task<List<PlaceModel>> GetAsync()
     {
         return await _placeCollection.Find(_ => true).ToListAsync();
     }
 
-    public async Task<Place?> GetAsync(string id)
+    public async Task<PlaceModel?> GetAsync(string id)
     {
         return await _placeCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
     }
@@ -40,23 +40,23 @@ public class PlaceService
         return response;
     }
 
-    public async Task CreateAsync(Place newPlace)
+    public async Task CreateAsync(PlaceModel newPlace)
     {
         await _placeCollection.InsertOneAsync(newPlace);
     }
 
-    public async Task UpdateAsync(string id, [FromBody] Place updatedPlace)
+    public async Task UpdateAsync(string id, [FromBody] PlaceModel updatedPlace)
     {
         await _placeCollection.ReplaceOneAsync(x => x.Id == id, updatedPlace);
     }
 
-    public async Task AddComment(Place place, [FromBody] Comments comment)
+    public async Task AddComment(PlaceModel place, [FromBody] Comments comment)
     {
         place.Comment.Add(comment);
         await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
     }
 
-    public async Task AddPicture(Place place, [FromBody] List<Picture> pictures)
+    public async Task AddPicture(PlaceModel place, [FromBody] List<Picture> pictures)
     {
         foreach (var pic in pictures)
         {
@@ -71,7 +71,7 @@ public class PlaceService
         await _placeCollection.DeleteOneAsync(x => x.Id == id);
     }
 
-    public async Task RemoveCommentAsync(string commentId, Place place)
+    public async Task RemoveCommentAsync(string commentId, PlaceModel place)
     {
         for (int i = 0; i < place.Comment.Count; i++)
         {
@@ -83,7 +83,7 @@ public class PlaceService
         await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
     }
 
-    public async Task RemovePictureAsync(string pictureId, Place place)
+    public async Task RemovePictureAsync(string pictureId, PlaceModel place)
     {
         for (int i = 0; i < place.Pictures.Count; i++)
         {
@@ -95,7 +95,7 @@ public class PlaceService
         await _placeCollection.ReplaceOneAsync(x => x.Id == place.Id, place);
     }
 
-    public async Task UpdateEvaluation(Place place, string userId)
+    public async Task UpdateEvaluation(PlaceModel place, string userId)
     {
         var evaluation = place.Evaluation;
         Predicate<string> find = item => item == userId;

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using what_a_place_is_this.api.DTOs;
 using what_a_place_is_this.api.Models;
 using what_a_place_is_this.api.Services;
 
@@ -10,45 +12,44 @@ public class PlaceController : ControllerBase
 {
     private readonly PlaceService _service;
     private readonly string _HOST;
+    private readonly IMapper _mapper;
 
-    public PlaceController(PlaceService service, IConfiguration config)
+    public PlaceController(PlaceService service, IConfiguration config, IMapper mapper)
     {
         _service = service;
         _HOST = config["Host"];
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<List<Place>> Get()
+    public async Task<List<PlaceModel>> Get()
     {
-        List<Place> place = await _service.GetAsync();
+        List<PlaceModel> place = await _service.GetAsync();
         foreach (var item in place)
         {
-            for (int i = 0; i < item.Pictures.Count; i++)
+            var newPictures = new List<Picture>();
+            foreach (var picture in item.Pictures)
             {
-                if (item.Pictures[i].Validated == true)
+                if (picture.Validated)
                 {
                     Console.WriteLine("Path: " + _HOST);
-                    if (item.Pictures[i].Active == true)
+                    if (picture.Active)
                     {
-                        item.Pictures[i].Path = _HOST + item.Pictures[i].Path.Replace("wwwroot/", "");
+                        picture.Path = _HOST + picture.Path.Replace("wwwroot/", "");
+                        newPictures.Add(picture);
                     }
-                    else if (item.Pictures[i].Active == false)
-                    {
-                        item.Pictures.RemoveAt(i);
-                    }
-                }
-                else if (item.Pictures[i].Validated == false)
-                {
-                    item.Pictures.RemoveAt(i);
                 }
             }
+            item.Pictures = newPictures;
         }
+
         return place;
     }
+
     [HttpGet("{id:length(24)}")]
-    public async Task<ActionResult<Place>> Get(string id)
+    public async Task<ActionResult<PlaceModel>> Get(string id)
     {
-        Place place = await _service.GetAsync(id);
+        PlaceModel place = await _service.GetAsync(id);
 
         if (place is null)
         {
@@ -80,7 +81,7 @@ public class PlaceController : ControllerBase
     public async Task<IActionResult> SetEvaluation(string placeId, string userId)
     {
         //User user = new()
-        Place place = await _service.GetAsync(placeId);
+        PlaceModel place = await _service.GetAsync(placeId);
         if (place is null)
         {
             return NotFound();
@@ -91,9 +92,11 @@ public class PlaceController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromForm] Place newPlace, IFormFile[] picture)
+    public async Task<IActionResult> Post([FromForm] PlaceDTO newPlace, IFormFile[] picture)
     {
         Picture newPicture = new Picture();
+        PlaceModel place = new();
+        place = _mapper.Map<PlaceModel>(newPlace);
         for (int i = 0; i < picture.Length; i++)
         {
             var ext = Path.GetExtension(picture[i].FileName);
@@ -103,15 +106,15 @@ public class PlaceController : ControllerBase
             using Stream fileStream = new FileStream(filePath, FileMode.Create);
             picture[i].CopyTo(fileStream);
             newPicture.Path = filePath;
-            newPlace?.Pictures?.Add(newPicture);
+            place?.Pictures?.Add(newPicture);
         }
-        await _service.CreateAsync(newPlace);
-        return CreatedAtAction(nameof(Get), new { id = newPlace.Id }, newPlace);
+        await _service.CreateAsync(place);
+        return CreatedAtAction(nameof(Get), new { id = place.Id }, newPlace);
     }
 
 
     [HttpPatch("{id:length(24)}")]
-    public async Task<IActionResult> Update(string id, [FromBody] Place updatedBook)
+    public async Task<IActionResult> Update(string id, [FromBody] PlaceModel updatedBook)
     {
         var place = await _service.GetAsync(id);
 
@@ -143,7 +146,7 @@ public class PlaceController : ControllerBase
     }
 
     [HttpPatch("picture/{placeId:length(24)}")]
-    public async Task<IActionResult> AddPicture(string placeId, IFormFile[] _picture)
+    public async Task<IActionResult> AddPicture(string placeId, IFormFile[] picture)
     {
         var place = await _service.GetAsync(placeId);
 
@@ -152,18 +155,18 @@ public class PlaceController : ControllerBase
             return NotFound();
         }
 
-        Picture picture = new();
+        Picture _picture = new();
         List<Picture> pictures = new();
-        for (int i = 0; i < _picture.Length; i++)
+        for (int i = 0; i < picture.Length; i++)
         {
-            var ext = Path.GetExtension(_picture[i].FileName);
+            var ext = Path.GetExtension(picture[i].FileName);
             string uuid = Guid.NewGuid().ToString();
             string filePath = Path.Combine("wwwroot/Storage/PlacePictures/", uuid + ext);
 
             using Stream fileStream = new FileStream(filePath, FileMode.Create);
-            _picture[i].CopyTo(fileStream);
-            picture.Path = filePath;
-            pictures.Add(picture);
+            picture[i].CopyTo(fileStream);
+            _picture.Path = filePath;
+            pictures.Add(_picture);
         }
 
         await _service.AddPicture(place, pictures);
@@ -195,7 +198,7 @@ public class PlaceController : ControllerBase
     [HttpDelete("comment/{id:length(24)}/{commentId:length(24)}")]
     public async Task<IActionResult> DeleteComment(string id, string commentId)
     {
-        Place place = await _service.GetAsync(id);
+        PlaceModel place = await _service.GetAsync(id);
 
         if (place is null)
         {
@@ -209,7 +212,7 @@ public class PlaceController : ControllerBase
     [HttpDelete("picture/{placeId:length(24)}/{pictureId:length(24)}")]
     public async Task<IActionResult> DeletePicture(string placeId, string pictureId)
     {
-        Place place = await _service.GetAsync(placeId);
+        PlaceModel place = await _service.GetAsync(placeId);
 
         if (place is null)
         {

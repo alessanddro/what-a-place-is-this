@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace what_a_place_is_this.api.Models
 {
-    public class Establishments : Place
+    public class Establishments : PlaceModel
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
