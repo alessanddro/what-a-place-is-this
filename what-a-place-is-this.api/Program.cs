@@ -1,4 +1,6 @@
+using what_a_place_is_this.api.Config;
 using what_a_place_is_this.api.Data;
+using what_a_place_is_this.api.Mappings;
 using what_a_place_is_this.api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,8 +13,9 @@ builder.Services.AddSingleton<PlaceService>();
 builder.Services.AddControllers();
 //
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(ModelToDTOProfile));
 
+builder.Services.AddSwaggerConfig();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
