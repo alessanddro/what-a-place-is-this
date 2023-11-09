@@ -12,9 +12,9 @@ public class PlaceService
     private readonly Conn _conn;
     private readonly IMongoCollection<PlaceModel> _placeCollection;
 
-    public PlaceService(IOptions<DatabaseSettings> bookStoreDatabaseSettings)
+    public PlaceService(IOptions<DatabaseSettings> placeStoreDatabaseSettings)
     {
-        _conn = new Conn(bookStoreDatabaseSettings);
+        _conn = new Conn(placeStoreDatabaseSettings);
         var _dataBase = _conn.getDataBase();
 
         _placeCollection = _dataBase.GetCollection<PlaceModel>("Places");

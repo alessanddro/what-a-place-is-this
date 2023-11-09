@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace what_a_place_is_this.api.Models
 {
-    public class User
+    public class UserModel
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -11,5 +11,6 @@ namespace what_a_place_is_this.api.Models
         public string UserName { get; set; }
         public string Pass { get; set; }
         public string Email { get; set; }
+        public string Role { get; set; }
     }
 }
