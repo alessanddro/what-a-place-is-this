@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using what_a_place_is_this.api.DTOs;
 using what_a_place_is_this.api.Models;
@@ -22,6 +23,7 @@ public class PlaceController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "adm")]
     public async Task<List<PlaceModel>> Get()
     {
         List<PlaceModel> place = await _service.GetAsync();
